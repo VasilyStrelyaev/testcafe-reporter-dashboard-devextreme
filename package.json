@@ -1,7 +1,7 @@
 {
-  "name": "testcafe-reporter-dashboard",
-  "version": "1.0.0-rc.3",
-  "description": "Dashboard TestCafe reporter plugin.",
+  "name": "@vasily.strelyaev/testcafe-reporter-dashboard-devextreme",
+  "version": "1.0.0-rc.6",
+  "description": "Dashboard TestCafe reporter plugin fork, tailored to the DevExtreme team.",
   "author": {
     "name": "Developer Express Inc.",
     "url": "https://www.devexpress.com/"
@@ -52,7 +52,7 @@
     "normalize-newline": "^1.0.2",
     "publish-please": "^5.5.2",
     "read-file-relative": "^1.2.0",
-    "testcafe": "^1.18.3",
+    "testcafe": "^1.20.0",
     "ts-node": "^8.7.0",
     "typescript": "^3.8.3"
   },
@@ -71,7 +71,7 @@
   "resolutions": {
     "ansi-regex": "5.0.1",
     "lodash": "4.17.21",
-    "glob-parent": "5.1.2",
+    "glob-parent": "6.0.1",
     "yargs-parser": "13.1.2",
     "set-value": "4.0.1"
   }
