@@ -54,6 +54,13 @@ export type Error = {
     id?: string;
 };
 
+export type FixtureInfo = {
+    id: string;
+    name: string | null;
+    path: string;
+    meta: Record<string, string>;
+};
+
 export type TestRunInfo = {
     browsers: (BrowserInfo & { testRunId: string })[];
     durationMs: number;
@@ -66,6 +73,7 @@ export type TestRunInfo = {
     unstable: boolean;
     videos: Video[];
     warnings: string[];
+    fixture: FixtureInfo;
 }
 
 export type DashboardTestRunInfo = {
@@ -92,6 +100,7 @@ export type Screenshot = Readonly<{
     quarantineAttempt: number;
     takenOnFail: boolean;
     screenshotData?: Buffer;
+    actionId?: string;
 }>;
 
 export type Video = Readonly<{
