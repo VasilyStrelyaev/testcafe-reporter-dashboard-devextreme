@@ -99,8 +99,7 @@ export default function reporterObjectFactory (
     const browserToRunsMap: Record<string, Record<string, any[]>> = {};
     const testRunIdToTestIdMap: Record<string, string>            = {};
     const errorsToTestIdMap: Record<string, string[]>             = {};
-    const testIdToFixtureNameMap: Record<string, string>          = {};
-    const fixtureNameToPathMap: Record<string, string>            = {};
+
 
     let rejectReport = false;
     let layoutTestingSettings: LayoutTestingSettings;
@@ -174,21 +173,13 @@ export default function reporterObjectFactory (
 
             logger.log(createReportUrlMessage(buildId || id, authenticationToken, dashboardUrl));
 
-            await Promise.all(taskStructure.map(({ fixture }) => {
-                return Promise.all(fixture.tests.map(({ id: testId }) => {
-                    testIdToFixtureNameMap[testId] = fixture.name;
-                    return Promise.resolve();
-                }));
-            }));
-
             await reportCommands.sendTaskStartCommand({
                 startTime, userAgents, testCount, buildId: buildId as BuildId, taskStructure, ciInfo
             });
         },
 
-        async reportFixtureStart (fixtureName, fixturePath): Promise<void> {
-            if (!fixtureNameToPathMap[fixtureName])
-                fixtureNameToPathMap[fixtureName] = fixturePath;
+        async reportFixtureStart (): Promise<void> {
+            return;
         },
 
         async reportWarnings (warning: Warning): Promise<void> {
@@ -265,7 +256,7 @@ export default function reporterObjectFactory (
         async reportTestDone (name, testRunInfo): Promise<void> {
             if (rejectReport) return;
 
-            const { screenshots, videos, errs, durationMs, testId, browsers, skipped, unstable }               = testRunInfo;
+            const { screenshots, videos, errs, durationMs, testId, browsers, skipped, unstable, fixture }      = testRunInfo;
             const { layoutTestingEnabled, screenshotsRelativePath, destinationRelativePath, comparerBasePath } = layoutTestingSettings;
 
             const testRunToScreenshotsMap: Record<string, ScreenshotMapItem[]> = {};
@@ -278,11 +269,19 @@ export default function reporterObjectFactory (
 
             if (!noScreenshotUpload) {
                 for (const screenshotInfo of screenshots) {
-                    const { screenshotPath, screenshotData, testRunId } = screenshotInfo;
+                    const { screenshotPath, screenshotData, testRunId, actionId } = screenshotInfo;
 
                     const currentUploadId = await uploader.uploadFile(screenshotPath, screenshotData);
 
                     if (!currentUploadId) continue;
+
+                    if (actionId) {
+                        const actions          = testRunToActionsMap[testRunId];
+                        const screenshotAction = actions?.find(action => action.command.actionId === actionId);
+
+                        if (screenshotAction)
+                            screenshotAction.screenshotPath = screenshotPath;
+                    }
 
                     const screenshotMapItem: ScreenshotMapItem = {
                         path: screenshotPath,
@@ -293,7 +292,7 @@ export default function reporterObjectFactory (
 
                     if (shouldUploadLayoutTestingData) {
                         const comparisonArtifactsPath   = screenshotPath.replace(new RegExp(`(${screenshotsRelativePath})(?!.*\\1)`), destinationRelativePath);
-                        const testPath                  = fixtureNameToPathMap[testIdToFixtureNameMap[testId]];
+                        const testPath                  = fixture.path;
                         const baselinePath              = path.join(path.dirname(testPath), 'etalons', path.basename(screenshotPath));
                         const relativeBaselinePathMatch = baselinePath.match(new RegExp(`\\/(${comparerBasePath.replace(/^\.\//, '')}.*)`)) ?? void 0;
                         const baselineSourcePath        = relativeBaselinePathMatch && relativeBaselinePathMatch[1];
@@ -354,23 +353,8 @@ export default function reporterObjectFactory (
                 }
 
                 const getBrowserRunInfo = (attemptRunId: string, attempt?: number): BrowserRunInfo => {
-                    let actions = testRunToActionsMap[attemptRunId];
-                    let screenshotIndex = 0;
-
+                    const actions       = testRunToActionsMap[attemptRunId];
                     const screenshotMap = testRunToScreenshotsMap[attemptRunId];
-
-                    actions = actions?.map(action => {
-                        if (action.apiName !== 'takeScreenshot' && action.apiName !== 'takeElementScreenshot')
-                            return action;
-
-                        if (screenshotIndex < screenshotMap.length) {
-                            action.screenshotPath = screenshotMap[screenshotIndex].path;
-                            screenshotMap[screenshotIndex].actionId = action.command.actionId;
-                            screenshotIndex++;
-                        }
-
-                        return action;
-                    });
 
                     const result = {
                         browser,
