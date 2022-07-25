@@ -46,13 +46,8 @@ function addArrayValueByKey<T> (collection: Record<string, T[]>, key: string, va
         collection[key].push(value);
 };
 
-function getShouldUploadLayoutTestingData (layoutTestingEnabled: boolean | undefined, browsers: (BrowserInfo & { testRunId: string })[], testBrowserRuns: Record<string, any[]>): boolean {
-    if (!layoutTestingEnabled || browsers.length > 1)
-        return false;
-
-    const alias = browsers[0].alias;
-
-    return testBrowserRuns && (!testBrowserRuns[alias] || testBrowserRuns[alias].length === 1);
+function getShouldUploadLayoutTestingData (layoutTestingEnabled: boolean | undefined, browsers: (BrowserInfo & { testRunId: string })[]): boolean {
+    return !!layoutTestingEnabled && browsers?.length <= 1;
 };
 
 async function uploadScreenshot (uploader: Uploader, basePath: string, postfix: string): Promise<string | undefined> {
@@ -185,6 +180,9 @@ export default function reporterObjectFactory (
         async reportWarnings (warning: Warning): Promise<void> {
             if (rejectReport) return;
 
+            if (warning.message.includes('It has just been rewritten with a recent screenshot.'))
+                return;
+
             if (warning.testRunId) {
                 if (!testRunToWarningsMap[warning.testRunId])
                     testRunToWarningsMap[warning.testRunId] = [];
@@ -265,7 +263,7 @@ export default function reporterObjectFactory (
             const testRunToErrorsMap: Record<string, TestError> = {};
 
             const testBrowserRuns               = browserToRunsMap[testId];
-            const shouldUploadLayoutTestingData = getShouldUploadLayoutTestingData(layoutTestingEnabled, browsers, testBrowserRuns);
+            const shouldUploadLayoutTestingData = getShouldUploadLayoutTestingData(layoutTestingEnabled, browsers);
 
             if (!noScreenshotUpload) {
                 for (const screenshotInfo of screenshots) {
