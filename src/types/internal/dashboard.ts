@@ -70,7 +70,6 @@ export type LayoutTestingSettings = {
     screenshotsDir: string;
     destinationDir: string;
     layoutTestingEnabled: boolean;
-    comparerBaseDir: string;
 };
 
 export type Logger = {
