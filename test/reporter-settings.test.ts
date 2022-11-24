@@ -56,15 +56,14 @@ describe('getReporterSettings()', () => {
         });
 
         it('should take env layout options', () => {
-            setLayoutSettingsVariables('true', 'env/screenshot/relative/path', 'env/destination/relative/path', 'env/base/path');
+            setLayoutSettingsVariables('true', 'env/screenshot/relative/path', 'env/destination/relative/path');
             reRequireModules();
 
             const taskProperties = {
                 configuration: {
                     'screenshots-comparer': {
                         screenshotsRelativePath: 'config/screenshot/relative/path',
-                        destinationRelativePath: 'config/destination/relative/path',
-                        path:                    'config/base/path'
+                        destinationRelativePath: 'config/destination/relative/path'
                     }
                 }
             };
@@ -72,8 +71,7 @@ describe('getReporterSettings()', () => {
             const expectedSettings = {
                 layoutTestingEnabled: true,
                 screenshotsDir:       'env/screenshot/relative/path',
-                destinationDir:       'env/destination/relative/path',
-                comparerBaseDir:      'env/base/path'
+                destinationDir:       'env/destination/relative/path'
             };
 
             const actualSettings = getLayoutTestingSettings(taskProperties as any as TaskProperties);
@@ -87,8 +85,7 @@ describe('getReporterSettings()', () => {
                 configuration: {
                     'screenshots-comparer': {
                         screenshotsRelativePath: 'config/screenshot/relative/path',
-                        destinationRelativePath: 'config/destination/relative/path',
-                        path:                    'config/base/path'
+                        destinationRelativePath: 'config/destination/relative/path'
                     }
                 }
             };
@@ -96,8 +93,7 @@ describe('getReporterSettings()', () => {
             const expectedSettings = {
                 layoutTestingEnabled: false,
                 screenshotsDir:       'config/screenshot/relative/path',
-                destinationDir:       'config/destination/relative/path',
-                comparerBaseDir:      'config/base/path'
+                destinationDir:       'config/destination/relative/path'
             };
 
             const actualSettings = getLayoutTestingSettings(taskProperties as any as TaskProperties);
@@ -114,8 +110,7 @@ describe('getReporterSettings()', () => {
             const expectedSettings = {
                 layoutTestingEnabled: false,
                 screenshotsDir:       '/screenshots',
-                destinationDir:       '/artifacts/compared-screenshots',
-                comparerBaseDir:      './testing'
+                destinationDir:       '/artifacts/compared-screenshots'
             };
 
             const actualSettings = getLayoutTestingSettings(taskProperties as any as TaskProperties);
